@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brand-light text-brand-navy font-sans antialiased overflow-x-hidden;
+  }
+}
+
+@layer components {
+  /* Minimalist Header Typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading tracking-tight text-brand-navy;
+  }
+
+  /* Core UI Button */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-brand-navy text-white font-semibold 
+           px-6 py-3 transition-all duration-200 ease-in-out
+           hover:-translate-y-0.5 shadow-sm hover:shadow-md;
+  }
+
+  /* Secondary Outline Button */
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 bg-transparent text-brand-navy 
+           border border-brand-navy font-semibold px-6 py-3 
+           transition-all duration-200 ease-in-out hover:bg-brand-navy hover:text-white;
+  }
+
+  /* Clean Container Card */
+  .clean-card {
+    @apply bg-white border border-brand-border rounded-none shadow-sm transition-all duration-300;
+  }
+
+  /* Form Inputs (Minimalist) */
+  .form-input {
+    @apply w-full bg-white border border-brand-border text-brand-navy px-4 py-3 
+           focus:outline-none focus:ring-1 focus:ring-brand-navy focus:border-brand-navy transition-all duration-200 placeholder:text-gray-400;
+  }
+}
