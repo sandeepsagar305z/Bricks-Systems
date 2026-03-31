@@ -29,14 +29,17 @@ function validateEmailService() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log("Contact form received:", JSON.stringify(body, null, 2));
 
     // Validate the request data
     const validationResult = contactSchema.safeParse(body);
     if (!validationResult.success) {
-      return createApiError("Invalid form data", 400);
+      console.error("Validation failed:", validationResult.error.errors);
+      return createApiError("Invalid form data: " + JSON.stringify(validationResult.error.errors), 400);
     }
 
     const contactData = validationResult.data;
+    console.log("Validation passed, contact data:", contactData);
 
     // Check if email service is configured
     const emailValidationError = validateEmailService();

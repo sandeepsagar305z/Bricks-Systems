@@ -5,11 +5,33 @@ import { ArrowRight, Mail, Phone, MapPin, Clock } from "lucide-react";
 
 export default function ContactSection() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus("loading");
-    setTimeout(() => setStatus("success"), 1500);
+    
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      message: formData.get("message"),
+    };
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || "Failed to send");
+      setStatus("success");
+      (e.target as HTMLFormElement).reset();
+    } catch (err: unknown) {
+      setStatus("error");
+      setErrorMsg(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    }
   };
 
   return (
@@ -92,26 +114,26 @@ export default function ContactSection() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-semibold text-brand-navy mb-2">First Name</label>
-                      <input required type="text" className="w-full bg-brand-light/50 border border-brand-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:bg-white transition-all text-sm placeholder:text-gray-400" placeholder="John" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-brand-navy mb-2">Last Name</label>
-                      <input required type="text" className="w-full bg-brand-light/50 border border-brand-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:bg-white transition-all text-sm placeholder:text-gray-400" placeholder="Doe" />
-                    </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-brand-navy mb-2">Full Name *</label>
+                    <input required type="text" name="name" className="w-full bg-brand-light/50 border border-brand-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:bg-white transition-all text-sm placeholder:text-gray-400" placeholder="Your Full Name" />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-semibold text-brand-navy mb-2">Email Address</label>
-                    <input required type="email" className="w-full bg-brand-light/50 border border-brand-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:bg-white transition-all text-sm placeholder:text-gray-400" placeholder="john@company.com" />
+                    <label className="block text-sm font-semibold text-brand-navy mb-2">Email Address *</label>
+                    <input required type="email" name="email" className="w-full bg-brand-light/50 border border-brand-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:bg-white transition-all text-sm placeholder:text-gray-400" placeholder="your@email.com" />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-semibold text-brand-navy mb-2">Project Details</label>
-                    <textarea required rows={4} className="w-full bg-brand-light/50 border border-brand-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:bg-white transition-all text-sm resize-none placeholder:text-gray-400" placeholder="Tell us about your timeline and feature requirements..." />
+                    <label className="block text-sm font-semibold text-brand-navy mb-2">Project Details *</label>
+                    <textarea required rows={4} name="message" className="w-full bg-brand-light/50 border border-brand-border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-navy focus:bg-white transition-all text-sm resize-none placeholder:text-gray-400" placeholder="Tell us about your project, timeline, and requirements..." />
                   </div>
+
+                  {status === "error" && (
+                    <div className="bg-red-50 border border-red-100 rounded-xl p-4 text-red-700 text-sm">
+                      {errorMsg}
+                    </div>
+                  )}
                   
                   <button 
                     type="submit" 

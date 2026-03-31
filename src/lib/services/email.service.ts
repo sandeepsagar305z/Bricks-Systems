@@ -10,10 +10,13 @@ export class EmailService {
   private constructor() {
     this.from = process.env.SMTP_FROM_EMAIL!;
     this.to = process.env.SMTP_TO_EMAIL!;
+    const port = Number(process.env.SMTP_PORT) || 587;
+    const secure = port === 465; // Use SSL for 465, STARTTLS for 587
+    
     this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT) || 465,
-      secure: true,
+      port,
+      secure,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -33,8 +36,14 @@ export class EmailService {
       from: this.from,
       to: this.to,
       subject: `New Contact Form Submission from ${data.name}`,
-      text: `Name: ${data.name}\nEmail: ${data.email}\nCompany: ${data.company || "-"}\nService: ${data.service}\nMessage: ${data.message}`,
-      html: `<p><b>Name:</b> ${data.name}</p><p><b>Email:</b> ${data.email}</p><p><b>Company:</b> ${data.company || "-"}</p><p><b>Service:</b> ${data.service}</p><p><b>Message:</b> ${data.message}</p>`
+      text: `Name: ${data.name}\nEmail: ${data.email}\n\nMessage:\n${data.message}`,
+      html: `
+        <h2>New Contact Form Submission</h2>
+        <p><b>Name:</b> ${data.name}</p>
+        <p><b>Email:</b> ${data.email}</p>
+        <p><b>Message:</b></p>
+        <p>${data.message.replace(/\n/g, "<br/>")}</p>
+      `
     };
   }
 
@@ -49,9 +58,22 @@ export class EmailService {
   }
 
   public async sendEmails(adminMail: any, userMail: any) {
-    // Send admin notification
-    await this.transporter.sendMail(adminMail);
-    // Send user confirmation
-    await this.transporter.sendMail(userMail);
+    try {
+      // Send admin notification
+      console.log("Sending admin email to:", adminMail.to);
+      await this.transporter.sendMail(adminMail);
+      console.log("Admin email sent successfully");
+      
+      // Send user confirmation
+      console.log("Sending user email to:", userMail.to);
+      await this.transporter.sendMail(userMail);
+      console.log("User email sent successfully");
+    } catch (error) {
+      console.error("SMTP Error Details:", {
+        message: error instanceof Error ? error.message : String(error),
+        code: error instanceof Error && 'code' in error ? (error as any).code : undefined,
+      });
+      throw error;
+    }
   }
 }
